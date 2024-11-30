@@ -1,8 +1,9 @@
 package com.dmm.task.form;
 
+import javax.validation.constraints.AssertTrue;
 import javax.validation.constraints.Size;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import lombok.Data;
 
@@ -14,8 +15,11 @@ public class CreateForm {
 	// textへのバリデーション設定を追加
 	@Size(min = 1, max = 200)
 	private String text;
-	
-	@JsonFormat(pattern = "YYYY-MM-dd")
+
+	@DateTimeFormat(pattern = "YYYY-MM-dd")
 	private String date;
-	
+
+	@AssertTrue
+	private Boolean done;
+
 }

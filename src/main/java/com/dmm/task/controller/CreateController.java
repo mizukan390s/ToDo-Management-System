@@ -20,39 +20,34 @@ import com.dmm.task.data.repository.TasksRepository;
 import com.dmm.task.form.CreateForm;
 import com.dmm.task.service.AccountUserDetails;
 
-
-
 @Controller
 public class CreateController {
-	
+
 	@Autowired
 	private TasksRepository repo;
 
 	@GetMapping("/main/create/{date}")
-	public String create(@PathVariable(name = "date") String date, Model model) {
+	public String regist(@PathVariable(name = "date") String date, Model model) {
 		CreateForm createForm = new CreateForm();
 		model.addAttribute("createForm", createForm);
 		DateTimeFormatter f = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 		LocalDate d = LocalDate.parse(date, f);
-		model.addAttribute("date",d);
+		model.addAttribute("date", d);
 
-		
 		return "/create";
 	}
-	
+
 	@PostMapping("/main/create")
 	public String create(@Validated CreateForm createForm, BindingResult bindingResult,
-			@AuthenticationPrincipal AccountUserDetails user,Model model) {
-		
+			@AuthenticationPrincipal AccountUserDetails user, Model model) {
+
 		if (bindingResult.hasErrors()) {
 			List<Tasks> list = repo.findAll(Sort.by(Sort.Direction.DESC, "id"));
 			model.addAttribute("posts", list);
 			model.addAttribute("CreateForm", createForm);
-			
+
 			return "/create";
 		}
-		
-		
 
 		Tasks task = new Tasks();
 		task.setName(user.getName());
@@ -67,6 +62,5 @@ public class CreateController {
 
 		return "redirect:/main";
 	}
-
 
 }

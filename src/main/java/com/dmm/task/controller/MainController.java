@@ -4,14 +4,14 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.GetMapping;
 
 import com.dmm.task.data.entity.Tasks;
@@ -71,8 +71,8 @@ public class MainController {
 
 		// 最終週の翌月分をDayOfWeekの値を使って計算し、6．で生成したリストへ格納し、最後に1．で生成したリストへ格納する
 		w = ld.getDayOfWeek().getValue();
-		if (w != 7) {
-			for (int i = w; i < 7; i++) {
+		if (w < 7) {
+			for (int i = 0; i < 7 - w; i++) {
 				week.add(ld);
 				ld = ld.plusDays(1);
 			}
@@ -84,30 +84,28 @@ public class MainController {
 		 * 8. 管理者は全員分のタスクを見えるようにする
 		 */
 
-		Map<LocalDate, List<Tasks>> mvm = new LinkedHashMap<>();
+		// 日付とタスクを紐付けるコレクション
+		MultiValueMap<LocalDate, Tasks> tasks = new LinkedMultiValueMap<>();
 
-		String userName = user.getName();
+		// タスク取得
+		List<LocalDate> l = list.get(list.size() - 1);
+		LocalDate stratDate = list.get(0).get(0);
+		LocalDate lastDate = list.get(list.size() - 1).get(l.size() - 1);
 
-		for (int i = 0; i < list.size(); i++) {
-			List<LocalDate> l = list.get(i);
-			for (int j = 0; j < l.size(); j++) {
-				if (userName.equals("admin-name")) {
-					mvm.put(list.get(i).get(j), tasksRepository.findAllByDateBetween(list.get(i).get(j)));
-				} else {
-					mvm.put(list.get(i).get(j), tasksRepository.findByDateBetween(list.get(i).get(j), userName));
-				}
-			}
+		List<Tasks> taskList;
+		if (user.getUsername().equals("admin")) {
+			taskList = tasksRepository.findAllByDateBetween(stratDate, lastDate);
+		} else {
+			taskList = tasksRepository.findByDateBetween(stratDate, lastDate, user.getName());
 		}
 
-		mvm.forEach((x, y) -> {
-			//System.out.println(y);
-			model.addAttribute("tasks.get(day)", y);
-		});
+		// 取得したタスクをコレクションに追加
+		for (Tasks task : taskList) {
+			tasks.add(task.getDate(), task);
+		}
 
-		//System.out.println(userName);
-		//System.out.println(ym.withDayOfMonth(1));
-		//System.out.println(ym.withDayOfMonth(ym.lengthOfMonth()));
-		// System.out.println(tasksRepository.findAllByDateBetween(ym.withDayOfMonth(1),ym.withDayOfMonth(ym.lengthOfMonth())));
+		// コレクションのデータをHTMLに連携
+		model.addAttribute("tasks", tasks);
 
 		return "main";
 	}
