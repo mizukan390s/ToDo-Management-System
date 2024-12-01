@@ -26,21 +26,21 @@ public class MainController {
 	private TasksRepository tasksRepository;
 
 	@GetMapping("/main")
-	public String getmain(Model model, @AuthenticationPrincipal AccountUserDetails user,@RequestParam(name = "date", required = false) String date) {
-		
-		
-		
-		LocalDate ym ;
-		if(date == null || date == "") {
-			ym=LocalDate.now();
-		}else {
+	public String getmain(Model model, @AuthenticationPrincipal AccountUserDetails user,
+			@RequestParam(name = "date", required = false) String date) {
+
+		LocalDate ym;
+		if (date == null || date == "") {
+			ym = LocalDate.now();
+		} else {
 			DateTimeFormatter f = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-			ym =  LocalDate.parse(date,f);
-			
+			ym = LocalDate.parse(date, f);
+
 		}
-		
-		
-		
+
+		model.addAttribute("prev", ym.minusMonths(1));
+		model.addAttribute("next", ym.plusMonths(1));
+
 		DateTimeFormatter sdf1 = DateTimeFormatter.ofPattern("yyyy年MM月");
 		String formatNowDate = sdf1.format(ym);
 		model.addAttribute("month", formatNowDate);
@@ -119,9 +119,6 @@ public class MainController {
 
 		// コレクションのデータをHTMLに連携
 		model.addAttribute("tasks", tasks);
-		
-		model.addAttribute("prev",ym = ym.minusMonths(1));
-		model.addAttribute("next",ym = ym.plusMonths(2));
 
 		return "main";
 	}
