@@ -13,6 +13,7 @@ import org.springframework.ui.Model;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import com.dmm.task.data.entity.Tasks;
 import com.dmm.task.data.repository.TasksRepository;
@@ -25,9 +26,21 @@ public class MainController {
 	private TasksRepository tasksRepository;
 
 	@GetMapping("/main")
-	public String getmain(Model model, @AuthenticationPrincipal AccountUserDetails user) {
-
-		LocalDate ym = LocalDate.now();
+	public String getmain(Model model, @AuthenticationPrincipal AccountUserDetails user,@RequestParam(name = "date", required = false) String date) {
+		
+		
+		
+		LocalDate ym ;
+		if(date == null || date == "") {
+			ym=LocalDate.now();
+		}else {
+			DateTimeFormatter f = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+			ym =  LocalDate.parse(date,f);
+			
+		}
+		
+		
+		
 		DateTimeFormatter sdf1 = DateTimeFormatter.ofPattern("yyyy年MM月");
 		String formatNowDate = sdf1.format(ym);
 		model.addAttribute("month", formatNowDate);
@@ -106,6 +119,9 @@ public class MainController {
 
 		// コレクションのデータをHTMLに連携
 		model.addAttribute("tasks", tasks);
+		
+		model.addAttribute("prev",ym = ym.minusMonths(1));
+		model.addAttribute("next",ym = ym.plusMonths(2));
 
 		return "main";
 	}
