@@ -16,6 +16,7 @@ public class CreateForm {
 	@Size(min = 1, max = 200)
 	private String text;
 
+	@Size(min = 1, max = 200)
 	@DateTimeFormat(pattern = "YYYY-MM-dd")
 	private String date;
 
